@@ -1,0 +1,1 @@
+dir *.csv /b > list.txt
