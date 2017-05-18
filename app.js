@@ -1,10 +1,8 @@
 var readLine = require('lei-stream').readLine;
 var stream = require('./stream');
 
-var isGoon = 0;
 var fileHub = [];
 var fileNo = 0;
-
 var fileList = 'C:/oldcsv/list.txt';
 
 readLine(fileList).go(function (data, next) {
@@ -24,9 +22,7 @@ readLine(fileList).go(function (data, next) {
             fileHub[fileNo] = oneLine;
             fileNo++;
     }
-    // console.log(oneLine);
     next();
-    // stream.inint(oneLine);
 
 }, function () {
     runConverter(0);
