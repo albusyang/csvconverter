@@ -41,6 +41,7 @@ var timeInGmt = null;
 var sourceFrom = 'qit';
 var createdBy = 'qit';
 var createdTime = null;
+var timeInSecond = null;
 
 function msToS(v) {
     return parseInt(v / 1000, 10);
@@ -108,10 +109,8 @@ function printMemoryUsage() {
 var getRowData = function (strData) {
     
     if (strData != null) {
-        // console.log(strData);
         var j = 0;
         for (var i = 0; i < strData.length; i++) {
-            // console.log(strData[i]);
             if (strData[i] != ',') {
                 part += strData[i];
             } else if (strData[i] == ',') {
@@ -126,12 +125,10 @@ var getRowData = function (strData) {
                 part = '';
             }
         }
-        // pickUp(rowData);
     }
 }
 
 var pickUp = function (hereData) {
-    // console.log(hereData);
     if (hereData[0] == '#RIC') {
         writeRow = '\"' + 'CODE' + '\"' + ',' +
             '\"' + 'FIELD_GROUP' + '\"' + ',' +
@@ -142,7 +139,8 @@ var pickUp = function (hereData) {
             '\"' + 'CREATED_BY' + '\"' + ',' +
             '\"' + 'CREATED_TIME' + '\"' + ',' +
             '\"' + 'UPDATED_BY' + '\"' + ',' +
-            '\"' + 'UPDATED_TIME' + '\"';
+            '\"' + 'UPDATED_TIME' + '\"' + ',' +
+            '\"' + 'TIME_IN_SECOND' + '\"';
     } else {
         // 获取交易品种代码，仅获取一次
         if (ric == null) {
@@ -202,9 +200,9 @@ var pickUp = function (hereData) {
         var tempTime = aDate + ' ' + oTime;
         var timeRaw = new Date(tempTime);
         var timeInLocalRaw = timeRaw.getTime() + (gmt * 3600000);
+        timeInSecond = timeRaw.getTime() / 1000;
         timeInGmt = moment(timeRaw).format('YYYY-MM-DD HH:mm:ss.SSSSSS');
         timeInLocal = moment(timeInLocalRaw).format('YYYY-MM-DD HH:mm:ss.SSSSSS');
-
         createdTime = timeInLocal;
 
         // 不同行情分别组装数据
@@ -230,16 +228,17 @@ var pickUp = function (hereData) {
             }
 
             if (price != null && volume != null) {
-                fieldValues = '{' + '\"' + '\"' + 'lastQuantity' + '\"' + '\"' + ':' + '\"' + '\"' + volume + '\"' + '\"' + ',' + '\"' +
+                fieldValues = '{' + '\"' + 
+                    '\"' + 'lastQuantity' + '\"' + '\"' + ':' + '\"' + '\"' + volume + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'lowPrice' + '\"' + '\"' + ':' + '\"' + '\"' + lowPrice + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'highPrice' + '\"' + '\"' + ':' + '\"' + '\"' + highPrice + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'openPrice' + '\"' + '\"' + ':' + '\"' + '\"' + openPrice + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'volume' + '\"' + '\"' + ':' + '\"' + '\"' + accVolume + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'lastPrice' + '\"' + '\"' + ':' + '\"' + '\"' + price + '\"' + '\"' + '}';
-                writeRow = '\"' + code + '\"' + ',' + '\"' + fieldGroup + '\"' + ',' + '\"' + fieldValues + '\"' + ',' + '\"' + timeInLocal + '\"' + ',' +
-                    '\"' + timeInGmt + '\"' + ',' + '\"' + sourceFrom + '\"' + ',' + '\"' + createdBy + '\"' + ',' + '\"' + createdTime + '\"' + ',' + ',';
+                writeRow = '\"' + code + '\"' + ',' + '\"' + fieldGroup + '\"' + ',' + '\"' + fieldValues + '\"' + ',' + 
+                    '\"' + timeInLocal + '\"' + ',' + '\"' + timeInGmt + '\"' + ',' + '\"' + sourceFrom + '\"' + ',' + 
+                    '\"' + createdBy + '\"' + ',' + '\"' + createdTime + '\"' + ',' + ',' + ',' + timeInSecond;
             }
-            // console.log(writeRow);
         } else if (type == 'Quote') {
             fieldGroup = 'DEPTH';
             if (hereData[11] != '') {
@@ -261,13 +260,15 @@ var pickUp = function (hereData) {
                     '\"' + 'bestAskPrice1' + '\"' + '\"' + ':' + '\"' + '\"' + askPrice + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'bestAskSize1' + '\"' + '\"' + ':' + '\"' + '\"' + askSize + '\"' + '\"' + '}';
 
-                writeRow = '\"' + code + '\"' + ',' + '\"' + fieldGroup + '\"' + ',' + '\"' + fieldValues + '\"' + ',' + '\"' + timeInLocal + '\"' + ',' +
-                    '\"' + timeInGmt + '\"' + ',' + '\"' + sourceFrom + '\"' + ',' + '\"' + createdBy + '\"' + ',' + '\"' + createdTime + '\"' + ',' + ',';
+                writeRow = '\"' + code + '\"' + ',' + '\"' + fieldGroup + '\"' + ',' + '\"' + fieldValues + '\"' + ',' + 
+                    '\"' + timeInLocal + '\"' + ',' + '\"' + timeInGmt + '\"' + ',' + '\"' + sourceFrom + '\"' + ',' + 
+                    '\"' + createdBy + '\"' + ',' + '\"' + createdTime + '\"' + ',' + ',' + ',' + timeInSecond;
             }
         }
     }
 }
 
+// 在读取下个csv文件之前，清空内存中的数据
 function clearup () {
     price = null; //#8
     volume = null; //#9
@@ -279,8 +280,6 @@ function clearup () {
     highPrice = null; //#54
     lowPrice = null; //#55
     accVolume = null; //#56
-
-    // 拼装好的数据
     fieldGroup = null;
     fieldValues = null;
     timeInLocal = null;
