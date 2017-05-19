@@ -22,7 +22,6 @@ var gmt = null; //#5
 var type = null; //#6
 var price = null; //#8
 var volume = null; //#9
-var mvwap = null; //#10
 var bidPrice = null; //#12
 var bidSize = null; //#13
 var askPrice = null; //#16
@@ -83,7 +82,6 @@ var inint = function (csvName) {
             // process.exit();
         });
     });
-
     // setInterval(printMemoryUsage, 1000);
 }
 
