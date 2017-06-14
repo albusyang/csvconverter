@@ -1,0 +1,4 @@
+﻿code    =    	AUFC1@SHFE			
+oldcsv	=	C:/oldcsv/
+newcsv	=	D:/newcsv/
+divisor	=	10

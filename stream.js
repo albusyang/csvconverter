@@ -9,6 +9,7 @@ var output = null;
 var counter = 0;
 var startTime = Date.now();
 var number = 1;
+var divisor = 1; // 用于将单位转换成手
 
 var writeRow = ''; // 用来写入的数据
 var rowData = []; // 存放一行数据
@@ -42,6 +43,18 @@ var createdBy = 'qit';
 var createdTime = null;
 var timeInSecond = null;
 
+var firstLine = '\"' + 'CODE' + '\"' + ',' +
+    '\"' + 'FIELD_GROUP' + '\"' + ',' +
+    '\"' + 'FIELD_VALUES' + '\"' + ',' +
+    '\"' + 'TIME_IN_LOCAL' + '\"' + ',' +
+    '\"' + 'TIME_IN_GMT' + '\"' + ',' +
+    '\"' + 'SOURCE_FROM' + '\"' + ',' +
+    '\"' + 'CREATED_BY' + '\"' + ',' +
+    '\"' + 'CREATED_TIME' + '\"' + ',' +
+    '\"' + 'UPDATED_BY' + '\"' + ',' +
+    '\"' + 'UPDATED_TIME' + '\"' + ',' +
+    '\"' + 'TIME_IN_SECOND' + '\"';
+
 function msToS(v) {
     return parseInt(v / 1000, 10);
 }
@@ -50,13 +63,15 @@ function getSpentTime() {
     return Date.now() - startTime;
 }
 
-var inint = function (csvName) {
-    oldCsv = 'C:/oldcsv/' + csvName;
-    newCsv = 'D:/newcsv/' + csvName;
+var inint = function (thiscode, csvName, oldcsvPath, newcsvPath, divisor) {
+    // 输入、输出路径
+    oldCsv = oldcsvPath + csvName;
+    newCsv = newcsvPath + csvName;
+    code = thiscode;
     output = writeLine(newCsv, {
-    // 缓存多行，一次写入，50000是一个比较好的值
-    cacheLines: 50000
-});
+        // 缓存多行，一次写入，50000是一个比较好的值
+        cacheLines: 50000
+    });
     readLine(oldCsv).go(function (data, next) {
         counter++;
         getRowData(data + '\n');
@@ -64,7 +79,6 @@ var inint = function (csvName) {
             output.write(writeRow);
             writeRow = null;
         }
-        
         if (counter % 10000 === 0) {
             printSpeedInfo();
         }
@@ -76,7 +90,7 @@ var inint = function (csvName) {
             printMemoryUsage();
             clearup();
             console.log('clearup!')
-            app.runConverter(number);
+            app.runConverter(number); // 调用app中的方法，拿到下一个文件名，继续下一个文件的转换
             number++;
             console.log('-=-=-=-=-=-=-is go on-=-=-=-=-=-=-');
             // process.exit();
@@ -105,7 +119,6 @@ function printMemoryUsage() {
 }
 
 var getRowData = function (strData) {
-    
     if (strData != null) {
         var j = 0;
         for (var i = 0; i < strData.length; i++) {
@@ -128,81 +141,9 @@ var getRowData = function (strData) {
 
 var pickUp = function (hereData) {
     if (hereData[0] == '#RIC') {
-        writeRow = '\"' + 'CODE' + '\"' + ',' +
-            '\"' + 'FIELD_GROUP' + '\"' + ',' +
-            '\"' + 'FIELD_VALUES' + '\"' + ',' +
-            '\"' + 'TIME_IN_LOCAL' + '\"' + ',' +
-            '\"' + 'TIME_IN_GMT' + '\"' + ',' +
-            '\"' + 'SOURCE_FROM' + '\"' + ',' +
-            '\"' + 'CREATED_BY' + '\"' + ',' +
-            '\"' + 'CREATED_TIME' + '\"' + ',' +
-            '\"' + 'UPDATED_BY' + '\"' + ',' +
-            '\"' + 'UPDATED_TIME' + '\"' + ',' +
-            '\"' + 'TIME_IN_SECOND' + '\"';
+        writeRow = firstLine;
     } else {
-        // 获取交易品种代码，仅获取一次
-        if (ric == null) {
-            var rawCode = hereData[0];
-            var i = 0;
-            for (var p in rawCode) {
-                if (rawCode[p] == 'X') {
-                    continue;
-                }
-                if (rawCode[p] == '=') {
-                    ric += '@';
-                    i++;
-                    continue;
-                }
-                if (ric == null) {
-                    ric = rawCode[p];
-                } else {
-                    ric += rawCode[p];
-                }
-            }
-            if (ric == 'SHAUcv1') {
-                code = 'AUFC1@SHFE';
-            } else if (ric == 'GCcv1') {
-                code = 'AUFC1@COMEX';
-            } else if (ric == 'SIcv1') {
-                code = 'AGFC1@COMEX';
-            } else {
-                code = ric;
-            }
-        }
-
-        oDate = hereData[2]; // 获取时间
-        oTime = hereData[3];
-        gmt = hereData[4]; // 获取格林威治标准时间——GMT
-        type = hereData[5]; // 获取行情类型，Trade或Quote
-
-        // 获取到的时间需要重新造型
-        var aDate = '';
-        for (var i = 0; i < oDate.length; i++) {
-            switch (i) {
-                case 0:
-                    aDate = oDate[i];
-                    break;
-                case 3:
-                    aDate += oDate[i];
-                    aDate += '-';
-                    break;
-                case 5:
-                    aDate += oDate[i];
-                    aDate += '-';
-                    break;
-                default:
-                    aDate += oDate[i];
-                    break;
-            }
-        }
-        var tempTime = aDate + ' ' + oTime;
-        var timeRaw = new Date(tempTime);
-        var timeInLocalRaw = timeRaw.getTime() + (gmt * 3600000);
-        timeInSecond = timeInLocalRaw / 1000;
-        timeInGmt = moment(timeRaw).format('YYYY-MM-DD HH:mm:ss.SSSSSS');
-        timeInLocal = moment(timeInLocalRaw).format('YYYY-MM-DD HH:mm:ss.SSSSSS');
-        createdTime = timeInLocal;
-
+        formatTime(hereData);
         // 不同行情分别组装数据
         if (type == 'Trade') {
             fieldGroup = 'TRADE';
@@ -210,7 +151,7 @@ var pickUp = function (hereData) {
                 price = hereData[7];
             }
             if (hereData[8] != '') {
-                volume = hereData[8];
+                volume = hereData[8] / divisor;
             }
             if (hereData[52] != '') {
                 openPrice = hereData[52];
@@ -222,19 +163,18 @@ var pickUp = function (hereData) {
                 lowPrice = hereData[54];
             }
             if (hereData[55] != '') {
-                accVolume = hereData[55];
+                accVolume = hereData[55] / divisor;
             }
-
             if (price != null && volume != null) {
-                fieldValues = '{' + '\"' + 
+                fieldValues = '{' + '\"' +
                     '\"' + 'lastQuantity' + '\"' + '\"' + ':' + '\"' + '\"' + volume + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'lowPrice' + '\"' + '\"' + ':' + '\"' + '\"' + lowPrice + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'highPrice' + '\"' + '\"' + ':' + '\"' + '\"' + highPrice + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'openPrice' + '\"' + '\"' + ':' + '\"' + '\"' + openPrice + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'volume' + '\"' + '\"' + ':' + '\"' + '\"' + accVolume + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'lastPrice' + '\"' + '\"' + ':' + '\"' + '\"' + price + '\"' + '\"' + '}';
-                writeRow = '\"' + code + '\"' + ',' + '\"' + fieldGroup + '\"' + ',' + '\"' + fieldValues + '\"' + ',' + 
-                    '\"' + timeInLocal + '\"' + ',' + '\"' + timeInGmt + '\"' + ',' + '\"' + sourceFrom + '\"' + ',' + 
+                writeRow = '\"' + code + '\"' + ',' + '\"' + fieldGroup + '\"' + ',' + '\"' + fieldValues + '\"' + ',' +
+                    '\"' + timeInLocal + '\"' + ',' + '\"' + timeInGmt + '\"' + ',' + '\"' + sourceFrom + '\"' + ',' +
                     '\"' + createdBy + '\"' + ',' + '\"' + createdTime + '\"' + ',' + ',' + ',' + timeInSecond;
             }
         } else if (type == 'Quote') {
@@ -251,23 +191,74 @@ var pickUp = function (hereData) {
             if (hereData[16] != '') {
                 askSize = hereData[16];
             }
-
             if (bidPrice !== null && bidSize !== null && askPrice !== null && askSize !== null) {
                 fieldValues = '{' + '\"' + '\"' + 'bestBidPrice1' + '\"' + '\"' + ':' + '\"' + '\"' + bidPrice + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'bestBidSize1' + '\"' + '\"' + ':' + '\"' + '\"' + bidSize + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'bestAskPrice1' + '\"' + '\"' + ':' + '\"' + '\"' + askPrice + '\"' + '\"' + ',' + '\"' +
                     '\"' + 'bestAskSize1' + '\"' + '\"' + ':' + '\"' + '\"' + askSize + '\"' + '\"' + '}';
-
-                writeRow = '\"' + code + '\"' + ',' + '\"' + fieldGroup + '\"' + ',' + '\"' + fieldValues + '\"' + ',' + 
-                    '\"' + timeInLocal + '\"' + ',' + '\"' + timeInGmt + '\"' + ',' + '\"' + sourceFrom + '\"' + ',' + 
+                writeRow = '\"' + code + '\"' + ',' + '\"' + fieldGroup + '\"' + ',' + '\"' + fieldValues + '\"' + ',' +
+                    '\"' + timeInLocal + '\"' + ',' + '\"' + timeInGmt + '\"' + ',' + '\"' + sourceFrom + '\"' + ',' +
                     '\"' + createdBy + '\"' + ',' + '\"' + createdTime + '\"' + ',' + ',' + ',' + timeInSecond;
             }
         }
     }
 }
 
+var pickUpGlobal = function (hereData) {
+    if (hereData[0] == '#RIC') {
+        writeRow = firstLine;
+    } else {
+        fieldGroup = 'DEPTH';
+        if (hereData[11] != '') {
+            bidPrice = hereData[11];
+        }
+        if (hereData[15] != '') {
+            askPrice = hereData[15];
+        }
+        fieldValues = '{' + '\"' + '\"' + 'bestBidPrice1' + '\"' + '\"' + ':' + '\"' + '\"' + bidPrice + '\"' + '\"' + ',' + '\"' +
+            '\"' + 'bestAskPrice1' + '\"' + '\"' + ':' + '\"' + '\"' + askPrice + '\"' + '\"' + ',' + '\"' + '\"' + '}';
+        writeRow = '\"' + code + '\"' + ',' + '\"' + fieldGroup + '\"' + ',' + '\"' + fieldValues + '\"' + ',' +
+            '\"' + timeInLocal + '\"' + ',' + '\"' + timeInGmt + '\"' + ',' + '\"' + sourceFrom + '\"' + ',' +
+            '\"' + createdBy + '\"' + ',' + '\"' + createdTime + '\"' + ',' + ',' + ',' + timeInSecond;
+    }
+}
+
+function formatTime(hereData) {
+    oDate = hereData[2]; // 获取时间
+    oTime = hereData[3];
+    gmt = hereData[4]; // 获取格林威治标准时间——GMT
+    type = hereData[5]; // 获取行情类型，Trade或Quote
+    // 获取到的时间需要重新造型
+    var aDate = '';
+    for (var i = 0; i < oDate.length; i++) {
+        switch (i) {
+            case 0:
+                aDate = oDate[i];
+                break;
+            case 3:
+                aDate += oDate[i];
+                aDate += '-';
+                break;
+            case 5:
+                aDate += oDate[i];
+                aDate += '-';
+                break;
+            default:
+                aDate += oDate[i];
+                break;
+        }
+    }
+    // var tempTime = aDate + ' ' + oTime;
+    var timeRaw = new Date(aDate + ' ' + oTime);
+    var timeInLocalRaw = timeRaw.getTime() + (gmt * 3600000);
+    timeInSecond = timeRaw.getTime() / 1000;
+    timeInGmt = moment(timeRaw).format('YYYY-MM-DD HH:mm:ss.SSS');
+    timeInLocal = moment(timeInLocalRaw).format('YYYY-MM-DD HH:mm:ss.SSS');
+    createdTime = timeInLocal;
+}
+
 // 在读取下个csv文件之前，清空内存中的数据
-function clearup () {
+function clearup() {
     price = null; //#8
     volume = null; //#9
     bidPrice = null; //#12
@@ -282,6 +273,7 @@ function clearup () {
     fieldValues = null;
     timeInLocal = null;
     timeInGmt = null;
+    timeInSecond = null;
 }
 
 exports.inint = inint;
