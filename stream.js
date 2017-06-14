@@ -63,10 +63,11 @@ function getSpentTime() {
     return Date.now() - startTime;
 }
 
-var inint = function (thiscode, csvName, oldcsvPath, newcsvPath, divisor) {
+var inint = function (thiscode, csvName, oldcsvPath, newcsvPath, thisDivisor) {
     // 输入、输出路径
     oldCsv = oldcsvPath + csvName;
     newCsv = newcsvPath + csvName;
+    divisor = thisDivisor;
     code = thiscode;
     output = writeLine(newCsv, {
         // 缓存多行，一次写入，50000是一个比较好的值
@@ -132,7 +133,11 @@ var getRowData = function (strData) {
             if (strData[i] == '\n') {
                 rowData[j] = part;
                 j = 0;
-                pickUp(rowData);
+                if(code == 'XAU@GLOBAL') {
+                    pickUpGlobal(rowData);
+                } else {
+                    pickUp(rowData);
+                }
                 part = '';
             }
         }
@@ -208,6 +213,7 @@ var pickUpGlobal = function (hereData) {
     if (hereData[0] == '#RIC') {
         writeRow = firstLine;
     } else {
+        formatTime(hereData);
         fieldGroup = 'DEPTH';
         if (hereData[11] != '') {
             bidPrice = hereData[11];
@@ -223,6 +229,7 @@ var pickUpGlobal = function (hereData) {
     }
 }
 
+// 时间造型
 function formatTime(hereData) {
     oDate = hereData[2]; // 获取时间
     oTime = hereData[3];
@@ -248,7 +255,6 @@ function formatTime(hereData) {
                 break;
         }
     }
-    // var tempTime = aDate + ' ' + oTime;
     var timeRaw = new Date(aDate + ' ' + oTime);
     var timeInLocalRaw = timeRaw.getTime() + (gmt * 3600000);
     timeInSecond = timeRaw.getTime() / 1000;

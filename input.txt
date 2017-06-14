@@ -1,4 +1,4 @@
-﻿code    =    	AUFC1@SHFE			
+﻿code    =   XAU@GLOBAL			
 oldcsv	=	C:/oldcsv/
 newcsv	=	D:/newcsv/
-divisor	=	10
+divisor	=	1
