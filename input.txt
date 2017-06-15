@@ -1,4 +1,4 @@
-﻿code    =   XAU@GLOBAL			
+﻿code    =   	AU9999@SGE			
 oldcsv	=	C:/oldcsv/
 newcsv	=	D:/newcsv/
 divisor	=	1

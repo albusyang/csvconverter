@@ -8,7 +8,7 @@ var newCsv = '';
 var output = null;
 var counter = 0;
 var startTime = Date.now();
-var number = 1;
+var number = 1; // 回调app.js的计数器
 var divisor = 1; // 用于将单位转换成手
 
 var writeRow = ''; // 用来写入的数据
@@ -43,6 +43,7 @@ var createdBy = 'qit';
 var createdTime = null;
 var timeInSecond = null;
 
+// 每个文件的第一行
 var firstLine = '\"' + 'CODE' + '\"' + ',' +
     '\"' + 'FIELD_GROUP' + '\"' + ',' +
     '\"' + 'FIELD_VALUES' + '\"' + ',' +
@@ -58,7 +59,6 @@ var firstLine = '\"' + 'CODE' + '\"' + ',' +
 function msToS(v) {
     return parseInt(v / 1000, 10);
 }
-
 function getSpentTime() {
     return Date.now() - startTime;
 }
@@ -85,7 +85,6 @@ var inint = function (thiscode, csvName, oldcsvPath, newcsvPath, thisDivisor) {
         }
         next();
     }, function () {
-        console.log('end');
         output.end(function () {
             console.log('done. total %s lines, spent %sS', counter, msToS(getSpentTime()));
             printMemoryUsage();
@@ -93,7 +92,7 @@ var inint = function (thiscode, csvName, oldcsvPath, newcsvPath, thisDivisor) {
             console.log('clearup!')
             app.runConverter(number); // 调用app中的方法，拿到下一个文件名，继续下一个文件的转换
             number++;
-            console.log('-=-=-=-=-=-=-is go on-=-=-=-=-=-=-');
+            console.log('-=-=-=-=-=-=-end-=-=-=-=-=-=-');
             // process.exit();
         });
     });
@@ -144,6 +143,7 @@ var getRowData = function (strData) {
     }
 }
 
+// 通用数据转换
 var pickUp = function (hereData) {
     if (hereData[0] == '#RIC') {
         writeRow = firstLine;
@@ -209,6 +209,7 @@ var pickUp = function (hereData) {
     }
 }
 
+// XAU，XAG转换
 var pickUpGlobal = function (hereData) {
     if (hereData[0] == '#RIC') {
         writeRow = firstLine;
@@ -231,8 +232,8 @@ var pickUpGlobal = function (hereData) {
 
 // 时间造型
 function formatTime(hereData) {
-    oDate = hereData[2]; // 获取时间
-    oTime = hereData[3];
+    oDate = hereData[2]; // 获取日期
+    oTime = hereData[3]; // 获取时间
     gmt = hereData[4]; // 获取格林威治标准时间——GMT
     type = hereData[5]; // 获取行情类型，Trade或Quote
     // 获取到的时间需要重新造型
@@ -256,10 +257,10 @@ function formatTime(hereData) {
         }
     }
     var timeRaw = new Date(aDate + ' ' + oTime);
-    var timeInLocalRaw = timeRaw.getTime() + (gmt * 3600000);
     timeInSecond = timeRaw.getTime() / 1000;
     timeInGmt = moment(timeRaw).format('YYYY-MM-DD HH:mm:ss.SSS');
-    timeInLocal = moment(timeInLocalRaw).format('YYYY-MM-DD HH:mm:ss.SSS');
+    timeInLocal = moment(timeRaw.getTime() + (gmt * 3600000))
+                    .format('YYYY-MM-DD HH:mm:ss.SSS');
     createdTime = timeInLocal;
 }
 

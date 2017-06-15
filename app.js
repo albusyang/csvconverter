@@ -13,6 +13,7 @@ var oldcsv = '';
 var newcsv = '';
 var divisor = null;
 
+// 读配置文件
 var readConfig = function (config) {
     readLine(config).go(function (data, next) {
         var oneLine = null;
@@ -41,21 +42,16 @@ var readConfig = function (config) {
         }
         next();
     }, function () {
-        // console.log(configHub);
         code = configHub[0];
         oldcsv = configHub[1];
         newcsv = configHub[2];
         divisor = configHub[3];
-        // console.log('code = ' + code);
-        // console.log('oldcsv = ' + oldcsv);
-        // console.log('newcsv = ' + newcsv);
-        // console.log('divisor = ' + divisor);
         fileList = oldcsv + 'list.txt';
-        // console.log('fileList : ' + fileList);
         readFileList(fileList);
     });
 }
 
+// 读文件列表
 var readFileList = function (fileList) {
     readLine(fileList).go(function (data, next) {
         var oneLine = null;
@@ -73,13 +69,12 @@ var readFileList = function (fileList) {
             fileNo++;
         }
         next();
-
     }, function () {
         runConverter(0);
     });
 }
 
-function runConverter(number) {
+function runConverter (number) {
     var fileName = fileHub[number];
     if (fileName != null) {
         console.log('正在转换： ' + fileName);
