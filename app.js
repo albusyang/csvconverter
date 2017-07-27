@@ -7,7 +7,6 @@ var configHub = [];
 var configNo = 0;
 var config = './input.txt';
 var fileList = '';
-
 var code = '';
 var oldcsv = '';
 var newcsv = '';

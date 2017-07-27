@@ -10,7 +10,6 @@ var counter = 0;
 var startTime = Date.now();
 var number = 1; // 回调app.js的计数器
 var divisor = 1; // 用于将单位转换成手
-
 var writeRow = ''; // 用来写入的数据
 
 // 获取到的原始数据,过渡代码
@@ -128,7 +127,8 @@ var getRowData = function (strData) {
                 rowData[j] = part;
                 j++;
                 part = '';
-            } else if (strData[i] == '\n') {
+            } 
+            if (strData[i] == '\n') {
                 rowData[j] = part;
                 if(code == 'XAG@GLOBAL' || 'XAU@GLOBAL') {
                     pickUpGlobal(rowData);
