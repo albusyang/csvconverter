@@ -1,8 +1,8 @@
 {
   "name": "csvconverter",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "old.csv-->new.csv",
-  "main": "stream.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,6 +12,16 @@
   "author": "albus yang",
   "license": "ISC",
   "dependencies": {
-    "lei-stream": "^1.4.2"
-  }
+    "lei-stream": "~1.4.2",
+    "moment": "^2.18.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albusyang/csvconverter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/albusyang/csvconverter/issues"
+  },
+  "homepage": "https://github.com/albusyang/csvconverter#readme"
 }

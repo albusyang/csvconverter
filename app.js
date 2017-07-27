@@ -78,7 +78,7 @@ function runConverter (number) {
     var fileName = fileHub[number];
     if (fileName != null) {
         console.log('正在转换： ' + fileName);
-        stream.inint(code, fileName, oldcsv, newcsv, divisor);
+        stream.init(code, fileName, oldcsv, newcsv, divisor);
     } else {
         console.log('转换完成！');
         // process.exit();

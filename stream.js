@@ -12,8 +12,6 @@ var number = 1; // 回调app.js的计数器
 var divisor = 1; // 用于将单位转换成手
 
 var writeRow = ''; // 用来写入的数据
-var rowData = []; // 存放一行数据
-var part = ''; // 存放用逗号隔开的数据
 
 // 获取到的原始数据,过渡代码
 var ric = null; //#1
@@ -63,7 +61,7 @@ function getSpentTime() {
     return Date.now() - startTime;
 }
 
-var inint = function (thiscode, csvName, oldcsvPath, newcsvPath, thisDivisor) {
+var init = function (thiscode, csvName, oldcsvPath, newcsvPath, thisDivisor) {
     // 输入、输出路径
     oldCsv = oldcsvPath + csvName;
     newCsv = newcsvPath + csvName;
@@ -120,6 +118,8 @@ function printMemoryUsage() {
 
 var getRowData = function (strData) {
     if (strData != null) {
+        var part = ''; // 存放用逗号隔开的数据
+        var rowData = []; // 存放一行数据
         var j = 0;
         for (var i = 0; i < strData.length; i++) {
             if (strData[i] != ',') {
@@ -128,16 +128,13 @@ var getRowData = function (strData) {
                 rowData[j] = part;
                 j++;
                 part = '';
-            }
-            if (strData[i] == '\n') {
+            } else if (strData[i] == '\n') {
                 rowData[j] = part;
-                j = 0;
-                if(code == 'XAU@GLOBAL') {
+                if(code == 'XAG@GLOBAL' || 'XAU@GLOBAL') {
                     pickUpGlobal(rowData);
                 } else {
                     pickUp(rowData);
                 }
-                part = '';
             }
         }
     }
@@ -283,4 +280,4 @@ function clearup() {
     timeInSecond = null;
 }
 
-exports.inint = inint;
+exports.init = init;
